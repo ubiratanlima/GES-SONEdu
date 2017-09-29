@@ -9,11 +9,7 @@ use GES\Http\Controllers\Controller;
 
 class UsersController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+
     public function index()
     {
         $users = User::paginate();
@@ -46,13 +42,21 @@ class UsersController extends Controller
         }
 
         $data = $form->getFieldValues();
-        $password = str_random(6);
-        $data['password'] = $password;
+        $result = User::createFully($data);
+        $request->session()->flash('message','Usuário criado com sucesso!');
+        $request->session()->flash('user_created',[
+            'id' => $result['user']->id,
+            'password' => $result['password']
+        ]);
+        return redirect()->route('admin.users.show_details');
 
-        User::create($data);
+    }
 
-        return redirect()->route('admin.users.index');
-
+    public function showDetails(){
+        $userData = session('user_created');
+        $user = User::findOrFail($userData['id']);
+        $user->password = $userData['password'];
+        return view('admin.users.show_details',compact('user'));
     }
 
     public function show(User $user)
@@ -60,12 +64,6 @@ class UsersController extends Controller
         return view('admin.users.show',compact('user'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \GES\Models\User  $user
-     * @return \Illuminate\Http\Response
-     */
     public function edit(User $user)
     {
         $form = \FormBuilder::create(UserForm::class, [
@@ -93,6 +91,7 @@ class UsersController extends Controller
 
         $data = $form->getFieldValues();
         $user->update($data);
+        session()->flash('message','Usuário atualizado com sucesso!');
 
         return redirect()->route('admin.users.index');
     }
@@ -106,6 +105,7 @@ class UsersController extends Controller
     public function destroy(User $user)
     {
         $user->delete();
+        session()->flash('message','Usuário excluído com sucesso!');
         return redirect()->route('admin.users.index');
     }
 }

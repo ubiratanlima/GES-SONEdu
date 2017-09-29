@@ -12,6 +12,13 @@
 
     <!-- Styles -->
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
+    <style type="text/css">
+        @media print{
+            .hidden-print{
+                display: none !important;
+            }
+        }
+    </style>
 </head>
 <body>
 @php
@@ -19,29 +26,35 @@
 @endphp
     <div id="app">
         @php
+            $navbar = Navbar::withBrand(config('app.name'), route('admin.dashboard'))->inverse();
             if (Auth::check()){
-                $navbar = Navbar::withBrand(config('app.name'), route('admin.dashboard'));
-                $arrayLinks = [
-                    ['link' => route('admin.users.index'), 'title' => 'Usuários']
-                ];
+                if (\Gate::allows('admin')){
+                    $arrayLinks = [
+                        ['link' => route('admin.users.index'), 'title' => 'Usuários']
+                    ];
+                    $navbar->withContent(Navigation::links($arrayLinks));
+                }
 
                 $arrayLinksRight = [
                     [
                         Auth::user()->name,
                         [
                             [
+                                'link' => route('admin.users.settings.edit'),
+                                'title' => 'Configurações'
+                            ],
+                            [
                                 'link' => route('logout'),
                                 'title' => 'Sair',
                                 'linkAttributes' => [
-                                    'onclick' => "event.preventDefault();document.getElementById(\"form-logout\").submit();"
+                                'onclick' => "event.preventDefault();document.getElementById(\"form-logout\").submit();"
                                 ]
                             ]
                         ]
                     ]
                 ];
 
-                $navbar->withContent(Navigation::links($arrayLinks))
-                       ->withContent(Navigation::links($arrayLinksRight)->right());
+                $navbar->withContent(Navigation::links($arrayLinksRight)->right());
 
                 $formLogout = FormBuilder::plain([
                     'id' => 'form-logout',
@@ -53,8 +66,17 @@
             }
         @endphp
         {!! $navbar !!}
-        {!! form($formLogout) !!}
 
+        @if(Auth::check())
+            {!! form($formLogout) !!}
+        @endif
+
+        @if(Session::has('message'))
+            <div class="container hidden-print">
+                {!! Alert::success(Session::get('message'))->close() !!}
+                {{--{!! Alert::success(Session::get('message'))->close()->timeout(2000) !!}--}}
+            </div>
+        @endif
 
         @yield('content')
     </div>
