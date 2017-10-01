@@ -13,23 +13,18 @@ class User extends Authenticatable implements TableInterface
     const ROLE_ADMIN = 1;
     const ROLE_STUDENT = 2;
     const ROLE_TEACHER = 3;
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
+
     protected $fillable = [
         'name', 'email', 'password', 'enrolment'
     ];
 
-    /**
-     * The attributes that should be hidden for arrays.
-     *
-     * @var array
-     */
     protected $hidden = [
         'password', 'remember_token',
     ];
+
+    public function profile(){
+        return $this->hasOne(UserProfile::class)->withDefault();
+    }
 
     public function userable(){
         return $this->morphTo();
@@ -95,5 +90,8 @@ class User extends Authenticatable implements TableInterface
             case 'Função':
                 return $this->userable_type;
         }
+
+
+
     }
 }

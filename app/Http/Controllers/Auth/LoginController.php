@@ -51,7 +51,7 @@ class LoginController extends Controller
         $data = $request->only($this->username(), 'password');
         $usernameKey = $this->usernameKey();
         $data[$usernameKey] = $data[$this->username()];
-        $data['userable_type'] = Admin::class;
+//        $data['userable_type'] = \GES\Models\Admin::class; //Duvida Admin::class e \GES\Models\Admin::class
         unset($data[$this->username()]);
         return $data;
     }
